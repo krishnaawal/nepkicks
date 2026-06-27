@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Minus, PackageCheck, Phone, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Truck, X, ZoomIn } from "lucide-react";
 import { formatMoney, product } from "@/lib/product";
@@ -21,6 +22,7 @@ const initialForm: FormState = {
 };
 
 export default function LandingPage({ formattedPrice }: { formattedPrice: string }) {
+  const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [size, setSize] = useState<ProductSize>(product.sizes[0]);
@@ -61,8 +63,14 @@ export default function LandingPage({ formattedPrice }: { formattedPrice: string
       return;
     }
 
-    setMessage(`Order confirmed. Your order ID is ${data.orderId}.`);
     setForm(initialForm);
+    setModalOpen(false);
+    const params = new URLSearchParams({
+      orderId: data.orderId,
+      total: String(data.total),
+      product: product.name
+    });
+    router.push(`/thank-you?${params.toString()}`);
   }
 
   return (

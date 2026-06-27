@@ -14,6 +14,17 @@ If Resend is not configured, emails are skipped during local testing.
 
 After you add the Google and Resend environment variables, the same order form will automatically save to Google Sheets and send emails.
 
+If orders were saved locally before Google Sheets was fixed, sync them later with:
+
+```bash
+npm run sync:orders
+```
+
+If Google returns `Requested entity was not found`, check these two things:
+
+1. `GOOGLE_SHEET_ID` must be the spreadsheet ID from the URL, not the sheet tab ID.
+2. The Google Sheet must be shared with the `GOOGLE_CLIENT_EMAIL` service account as Editor.
+
 ## 1. Create Google Sheet
 
 1. Open Google Sheets.
@@ -73,6 +84,7 @@ Create `.env.local` in the project root:
 
 ```bash
 RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=Nepkicks <orders@your-verified-domain.com>
 ADMIN_EMAIL=unickbane@gmail.com
 ADMIN_PASSWORD=Clfa5afdd33
 GOOGLE_CLIENT_EMAIL=your_service_account_email
@@ -80,6 +92,8 @@ GOOGLE_PRIVATE_KEY=your_private_key_with_\n_line_breaks
 GOOGLE_SHEET_ID=your_google_sheet_id
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+For customer emails, verify your sending domain in Resend and use that address in `RESEND_FROM_EMAIL`. Resend test sender addresses can be restricted and may only deliver to your verified/admin email.
 
 ## 8. Run npm install
 

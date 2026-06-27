@@ -81,7 +81,13 @@ export function validateOrderPayload(payload: Partial<OrderPayload>) {
 }
 
 function getPrivateKey() {
-  return process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  return process.env.GOOGLE_PRIVATE_KEY
+    ?.replace(/[“”]/g, "\"")
+    .replace(/[‘’]/g, "'")
+    .replace(/[—–]/g, "-")
+    .replace(/^['"]+|[,;'"]+$/g, "")
+    .replace(/\\n/g, "\n")
+    .trim();
 }
 
 function hasGoogleSheetsConfig() {

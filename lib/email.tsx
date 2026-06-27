@@ -39,30 +39,41 @@ function orderEmailHtml(order: OrderRecord, admin = false) {
 export async function sendOrderEmails(order: OrderRecord) {
   const apiKey = process.env.RESEND_API_KEY;
   const adminEmail = process.env.ADMIN_EMAIL || product.businessEmail;
+  const from = process.env.RESEND_FROM_EMAIL || "Nepkicks <orders@resend.dev>";
   if (!apiKey) {
     console.warn(`Resend is not configured. Email skipped for order ${order.orderId}.`);
     return;
   }
 
   const resend = new Resend(apiKey);
-  const from = "Nepkicks <orders@resend.dev>";
 
   try {
-    await Promise.all([
-      resend.emails.send({
-        from,
-        to: order.email,
-        subject: `Nepkicks order confirmed: ${order.orderId}`,
-        html: orderEmailHtml(order)
-      }),
-      resend.emails.send({
-        from,
-        to: adminEmail,
-        subject: `New order ${order.orderId} - ${order.customerName}`,
-        html: orderEmailHtml(order, true)
-      })
-    ]);
+    const customerEmail = await resend.emails.send({
+      from,
+      to: order.email,
+      subject: `Nepkicks order confirmed: ${order.orderId}`,
+      html: orderEmailHtml(order)
+    });
+
+    if (customerEmail.error) {
+      console.error(`Customer email failed for order ${order.orderId}.`, customerEmail.error);
+    }
   } catch (error) {
-    console.error(`Resend email failed for order ${order.orderId}.`, error);
+    console.error(`Customer email failed for order ${order.orderId}.`, error);
+  }
+
+  try {
+    const adminNotification = await resend.emails.send({
+      from,
+      to: adminEmail,
+      subject: `New order ${order.orderId} - ${order.customerName}`,
+      html: orderEmailHtml(order, true)
+    });
+
+    if (adminNotification.error) {
+      console.error(`Admin email failed for order ${order.orderId}.`, adminNotification.error);
+    }
+  } catch (error) {
+    console.error(`Admin email failed for order ${order.orderId}.`, error);
   }
 }
